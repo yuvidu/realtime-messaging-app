@@ -4,19 +4,42 @@ import { Mail, MessageSquare, User,Lock, EyeOff,Eye} from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { Link } from 'react-router-dom'
 import AuthImagePattern from '../components/AuthImagePattern'
+import { toast } from 'react-hot-toast'
 
 const SignUpPage = () => {
 
   const [showPassword, setPassword] = useState(false);
   const [showformdata , setShowFormData] = useState({
-    fullname: '',
+    fullName: '',
     email: '',
     password: '',
   });
+  const{Signup,isSigningUp} = useAuthStore()
   
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const fullnameRegex = /^[a-zA-Z\s]+$/; // Only letters and spaces
 
-  const handleSubmit = (e) => {}
-  const{isSigningUp} = useAuthStore()
+  const validateForm = () => {
+    if(!showformdata.fullName.trim()) return toast.error("Full name is required");
+    if(!showformdata.email.trim()) return toast.error("email is required");
+    if(!showformdata.password.trim()) return toast.error("Password is required");
+    if(!emailRegex.test(showformdata.email)) return toast.error("email needs to be valid");
+    if(!fullnameRegex.test(showformdata.fullName)) return toast.error("Full name can only contain letters and spaces")
+      return true;
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formvalidationresult = validateForm();
+    if(formvalidationresult) {
+
+      Signup(showformdata)
+
+    }
+  }
+
+
+  
   
 
 
@@ -49,8 +72,8 @@ const SignUpPage = () => {
                   type='text' 
                   placeholder='Enter your full name' 
                   className='input input-bordered w-full pl-10 z-0' 
-                  value={showformdata.fullname} 
-                  onChange={(e) => setShowFormData({...showformdata, fullname: e.target.value})}
+                  value={showformdata.fullName} 
+                  onChange={(e) => setShowFormData({...showformdata, fullName: e.target.value})}
                 />
               </div>
             </div>
@@ -96,7 +119,7 @@ const SignUpPage = () => {
               </div>
             </div>
 
-            <button type="submit" className='btn btn-primary w-full' disabled={isSigningUp} >
+            <button type="submit" className='btn btn-primary w-full' disabled={isSigningUp}>
               {isSigningUp?(
                 <span className="loading loading-dots loading-xs"></span>
 

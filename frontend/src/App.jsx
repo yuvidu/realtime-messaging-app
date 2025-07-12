@@ -9,6 +9,7 @@ import SettingPage from './pages/SettingPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 
 import { useAuthStore } from './store/useAuthStore.js'
+import {Toaster} from 'react-hot-toast'
 
 //import {Loader} from 'lucide-react'
 
@@ -29,17 +30,20 @@ const App = () => {
       </div>
     )
   }
+  
 
   return (
     <div>
       <Navbar />
       <Routes>
         <Route path="/" element={authuser ? <Home /> : <Navigate to="/login"/>}/>
-        <Route path="/signup" element= {!authuser ? <SignUpPage /> : <Navigate to="/login"/>}/>
+        <Route path="/signup" element= {!authuser ? <SignUpPage /> : <Navigate to="/"/>}/>
         <Route path="/login" element= {!authuser ? <LoginPage /> : <Navigate to="/login"/>}/>
         <Route path="/settings" element={<SettingPage />} />
         <Route path="/profile" element={authuser ? <ProfilePage /> : <Navigate to="/login"/>}/>
       </Routes>
+      <Toaster position="top-center" />
+
     </div>
 
   )

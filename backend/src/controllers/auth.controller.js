@@ -9,7 +9,7 @@ export const signup = async(req,res) => {
     try {
         if(password.length < 6){
             console.log("password is not long enough");
-            return res.status(201).json({message:"password is not long enough"});
+            return res.status(400).json({message:"password is not long enough"});
             
         }
         const user = await User.findOne({email});
@@ -24,23 +24,17 @@ export const signup = async(req,res) => {
             fullName,
             password: hashedPassword,
             profilePicture
-        })
-        if (newUser){
+        });
+        await newUser.save();
             generateToken(newUser._id,res);
-            await newUser.save();
+            console.log("user created successfully");
             res.status(201).json({
                 _id: newUser._id,
                 email: newUser.email,
                 fullName: newUser.fullName,
                 profilePicture: newUser.profilePicture,
-            })
-
-        }
-        else{
-            console.log("user not created");
-            res.status(400).json({message:"user not created"});
-
-        }
+            });
+       
 
 
     } catch (error) {
@@ -73,7 +67,7 @@ export const login = async(req,res) =>{
         })
 
     } catch (error) {
-        console.log("error in login",error);
+        console.log("error in login",error.message, error.stack);
         res.status(500).json({message:"internal server error"});
         
     }
@@ -98,7 +92,12 @@ export const updateprofile = async(req,res) =>{
             profilePicture: uploadstatus.secure_url
         },{new: true})
 
-        res.status(200).json({message:"profile picture updated successfully",profilePicture: uploadstatus.secure_url})
+        res.status(200).json({
+            message:"profile picture updated successfully",
+            user: pictureupdatestatus,
+
+        })
+        //profilePicture: uploadstatus.secure_url
         if(!pictureupdatestatus){
             return res.status(400).json({message:"profile picture update failed"})
         }
@@ -114,6 +113,8 @@ export const logout = (req,res)=>{
         res.cookie("jwt","",{
             maxAge: 1
         })
+        return res.status(200).json({ message: "Logged out successfully" });
+
         
     } catch (error) {
         console.log("error in logout",error);

@@ -4,17 +4,31 @@ import Chatheader from '../components/chatheader'
 import MessageInput from '../components/messageInput'
 import MessageSkeleton from '../components/skeleton/messageskeleton'
 import { useAuthStore } from '../store/useAuthStore'
+import { useRef } from 'react'
  
 
 const Chatcontainer = () => {
-  const{messages,getmessages,isMessagesLoading,Selecteduser} = usechatstore();
+  const{messages,getmessages,isMessagesLoading,Selecteduser,subscribeToNewMessages,unsubscribeToNewMessages} = usechatstore();
   const{authuser} = useAuthStore();
+  const messageendref = useRef(null);
 
   useEffect(()=>{
-    if(Selecteduser && Selecteduser._id) {
+   
       getmessages(Selecteduser._id);
+      subscribeToNewMessages();
+      return () => {
+        unsubscribeToNewMessages();
+   
     }
-  },[Selecteduser, getmessages])
+  },[Selecteduser, getmessages, subscribeToNewMessages, unsubscribeToNewMessages  ])
+
+  useEffect (()=>{
+    if(messageendref.current && messages) {
+      messageendref.current.scrollIntoView({behavior:"smooth"})
+    }
+  },[messages]);
+
+     
   
   if(isMessagesLoading) 
     return (
@@ -38,6 +52,7 @@ const Chatcontainer = () => {
             <div 
               key={message._id} 
               className={`flex ${isSender ? 'justify-end' : 'justify-start'}`}
+              ref={messageendref}
             >
               <div className={`flex max-w-xs lg:max-w-md ${isSender ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}>
                 <div className='w-8 h-8 rounded-full overflow-hidden flex-shrink-0'>

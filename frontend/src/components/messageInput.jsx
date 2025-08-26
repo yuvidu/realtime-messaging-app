@@ -1,28 +1,59 @@
 import React, { useState } from 'react'
 import {usechatstore} from '../store/useChatStore'
 import {useRef} from 'react'
-import {X,Image} from 'lucide-react'
-
-
-
-
+import {X,Image,Send} from 'lucide-react'
+import { toast } from 'react-hot-toast';
 
 
 function messageInput() {
   const [message,setmessage] = useState("")
   const [image,setimage] = useState(null) 
   const fileinputref = useRef(null)
+  
   const {sendmessage} = usechatstore();
 
   const handlemessage = async(e) => {
-    setmessage(e.target.value)
+    e.preventDefault();
+    if(!message.trim() && !image){
+      return toast.error("Please enter a message")
+    }
+    try {
+     await sendmessage({
+        text : message,
+        image : image
+      })
+      setmessage("")
+      setimage(null)
+      
+      
+    } catch (error) {
+  
+    }
+  
+
+
+
+
   }
 
   const handleimage = (e) => {
-    setimage(e.target.files[0])
+    const file = e.target.files[0];
+    if(!file.type.startsWith("image/")){
+      return toast.error("Please select an image file")
+    }
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      setimage(reader.result)
+    };
+
+    reader.readAsDataURL(file);
+    
   }
 
-  const removeimage = () => {}
+  const removeimage = () => {
+    setimage(null)
+  }
 
 
 
@@ -75,8 +106,10 @@ function messageInput() {
           >
             <Image className="size-5" />
           </button>
-
         </div>
+        <button type="submit" className='btn btn-circle btn-sm bg-green-600' onClick={handlemessage} disabled={!message.trim() && !image}>
+          <Send className="size-4"/>
+        </button>
       </form>
         
     </div>

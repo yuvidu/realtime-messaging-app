@@ -1,6 +1,6 @@
-import express from "express";
 import User from "../models/user.model.js";
 import message from "../models/message.model.js";
+import cloudinary from "../lib/cloudinary.js";
 
 export const getusersforsidebar = async (req, res) => {
 
@@ -24,10 +24,8 @@ export const getmessages = async (req,res) => {
         const {id: usertochatid} = req.params;
         const currentuserid = req.user._id;
         const messages = await message.find({
-            $or: [
-                { senderID: currentuserid, receiverID: usertochatid },
-                { senderID: usertochatid, receiverID: currentuserid }
-            ]
+            senderID:{ $in: [currentuserid, usertochatid]},
+            receiverID:{ $in: [currentuserid, usertochatid]}
         })
         res.status(200).json(messages);
         
@@ -39,23 +37,19 @@ export const getmessages = async (req,res) => {
 
 export const sendmessage = async (req,res) => {
     try {
-
         const {receiverid:receiverID} = req.params;
         const {text,image} = req.body;
         const senderID = req.user._id;
         let imageURL;
         if(image){
-
             const uploadResponse = await cloudinary.uploader.upload(image);
             imageURL = uploadResponse.secure_url;
-
         }
-        const newmessage = new Message({
+        const newmessage = new message({
             senderID,
             receiverID,
             text,
             image: imageURL
-            
         })   
         const savestatus = await newmessage.save();
         if(!savestatus){
@@ -69,7 +63,6 @@ export const sendmessage = async (req,res) => {
             image: newmessage.image,
             createdAt: newmessage.createdAt
         })
-
         
     } catch (error) {
         res.status(500).json({"message":"internal server error"});
